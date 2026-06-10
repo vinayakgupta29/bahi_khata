@@ -1,5 +1,5 @@
 # Bahi Khata
-[Download Apk](https://github.com/vinayakgupta29/bahi_khata/releases/download/alpha/bahi_kahta.apk)
+[Get it on Play Store](https://play.google.com/store/apps/details?id=com.vins.bahi_khata&hl=en_IN&pli=1)
 <div style="display: flex; justify-content: space-between;">
    <div style="text-align: center;"> <img src="https://github.com/vinayakgupta29/bahi_khata/blob/main/assets/Screenshot_2024-02-09-17-11-53-37_bda9946562fe04081165a9124e0fc1f4.jpg" alt="Image 1" width="200"><p>Pic 1</p></div>
    <div style="text-align: center;"> <img src="https://github.com/vinayakgupta29/bahi_khata/blob/main/assets/Screenshot_2024-02-09-17-12-00-42_bda9946562fe04081165a9124e0fc1f4.jpg" alt="Image 2" width="200"><p>Pic 2</p></div>
