@@ -6,22 +6,22 @@ import 'package:personal_bahi_khata/data/database.dart';
 import 'package:personal_bahi_khata/data/expenses.dart';
 import 'package:personal_bahi_khata/main.dart';
 import 'package:personal_bahi_khata/util/constants.dart';
+import 'package:personal_bahi_khata/util/tag_utils.dart';
 
-class PaymntBottomSheet extends StatefulWidget {
-  const PaymntBottomSheet({super.key});
+class AddPaymentPage extends StatefulWidget {
+  const AddPaymentPage({super.key});
 
   @override
-  State<PaymntBottomSheet> createState() => _PaymntBottomSheetState();
+  State<AddPaymentPage> createState() => _AddPaymentPageState();
 }
 
-class _PaymntBottomSheetState extends State<PaymntBottomSheet>
+class _AddPaymentPageState extends State<AddPaymentPage>
     with TickerProviderStateMixin {
-  var tags = ["Food", "Fast Food", "Donation", "Travel", "Other"];
+  var tags = List<String>.from(defaultTags);
   List<String> selectedTags = [];
   final List<Expense> _foundExpense = [];
   final _titlecontroller = TextEditingController();
   final _amountController = TextEditingController();
-  final DataBase db = DataBase();
   bool _isDebit = true;
   DateTime now = DateTime.now();
   DateTime _selectedDate = DateTime.now();
@@ -61,6 +61,36 @@ class _PaymntBottomSheetState extends State<PaymntBottomSheet>
       ),
     );
   }
+
+  Future<void> _selectDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      firstDate: DateTime(now.year - 5),
+      lastDate: DateTime(2200),
+      initialDate: _selectedDate,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: floatingButtonColor,
+              onPrimary: buttonTextColor,
+              surface: bgcolor,
+              onSurface: textcolor,
+            ),
+            dialogTheme: const DialogThemeData(backgroundColor: bgcolor),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
   // checkbox was tapped
   // void checkBoxChanged(Expense exp) {
   //   setState(() {
@@ -78,7 +108,7 @@ class _PaymntBottomSheetState extends State<PaymntBottomSheet>
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           date: _selectedDate.toIso8601String(),
           amount: double.parse(_amountController.text).toString(),
-          label: selectedTags,
+          label: normalizeTags(selectedTags),
           isDebit: _isDebit,
         ),
       );
@@ -166,15 +196,27 @@ class _PaymntBottomSheetState extends State<PaymntBottomSheet>
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        color: textcolor,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: textcolor,
+                          ),
+                        ),
                       ),
-                    ),
+                      const Center(
+                        child: Text(
+                          "Add Page",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                    ],
                   ),
                   const Align(
                     alignment: Alignment.centerLeft,
@@ -239,7 +281,7 @@ class _PaymntBottomSheetState extends State<PaymntBottomSheet>
                         Iterable<String> options,
                       ) {
                         return SizedBox(
-                          height: 100,
+                          height: 200,
                           child: Material(
                             type: MaterialType.canvas,
                             color: itemcolor,
@@ -296,12 +338,15 @@ class _PaymntBottomSheetState extends State<PaymntBottomSheet>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "Tags",
-                                  style: TextStyle(
-                                    color: textcolor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: const Text(
+                                    "Tags",
+                                    style: TextStyle(
+                                      color: textcolor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
                                 ),
                                 Wrap(
@@ -346,25 +391,33 @@ class _PaymntBottomSheetState extends State<PaymntBottomSheet>
                                           )
                                           .toList(),
                                 ),
-                                TextField(
-                                  style: const TextStyle(color: textcolor),
-                                  decoration: _fieldDecoration(
-                                    label: "Enter Tag",
-                                  ),
-                                  controller: selectedTagController,
-                                  focusNode: focusNode,
-                                  onSubmitted: (String value) {
-                                    if (!selectedTags.contains(value)) {
-                                      if (value.isNotEmpty) {
-                                        setState(() {
-                                          selectedTags.add(value);
-                                        });
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: TextField(
+                                    style: const TextStyle(color: textcolor),
+                                    inputFormatters: [
+                                      LengthLimitingTextInputFormatter(30),
+                                      UppercaseTagInputFormatter(),
+                                    ],
+                                    decoration: _fieldDecoration(
+                                      label: "Enter Tag",
+                                    ),
+                                    controller: selectedTagController,
+                                    focusNode: focusNode,
+                                    onSubmitted: (String value) {
+                                      final normalizedValue = normalizeTag(value);
+                                      if (!selectedTags.contains(normalizedValue)) {
+                                        if (normalizedValue.isNotEmpty) {
+                                          setState(() {
+                                            selectedTags.add(normalizedValue);
+                                          });
+                                        }
+                                        selectedTagController.clear();
+                                        FocusManager.instance.primaryFocus
+                                            ?.unfocus();
                                       }
-                                      selectedTagController.clear();
-                                      FocusManager.instance.primaryFocus
-                                          ?.unfocus();
-                                    }
-                                  },
+                                    },
+                                  ),
                                 ),
                               ],
                             ),
@@ -379,9 +432,7 @@ class _PaymntBottomSheetState extends State<PaymntBottomSheet>
                           matches.addAll(tags);
 
                           matches.retainWhere((s) {
-                            return s.toLowerCase().contains(
-                              textEditingValue.text.toLowerCase(),
-                            );
+                            return s.contains(textEditingValue.text.toUpperCase());
                           });
                           return matches;
                         }
@@ -389,7 +440,7 @@ class _PaymntBottomSheetState extends State<PaymntBottomSheet>
                       onSelected: (String option) {
                         if (!selectedTags.contains(option)) {
                           setState(() {
-                            selectedTags.add(option);
+                            selectedTags.add(normalizeTag(option));
                             _selectedTagController.clear();
                           });
                         }
@@ -398,21 +449,8 @@ class _PaymntBottomSheetState extends State<PaymntBottomSheet>
                   ),
                   TextButton(
                     style: TextButton.styleFrom(foregroundColor: textcolor),
-                    onPressed: () {
-                      showDatePicker(
-                        context: context,
-                        firstDate: DateTime(now.year - 5),
-                        lastDate: DateTime(2200),
-                        initialEntryMode: DatePickerEntryMode.calendarOnly,
-                      ).then((picked) {
-                        if (picked != null) {
-                          setState(() {
-                            _selectedDate = picked;
-                          });
-                        }
-                      });
-                    },
-                    child: Text(DateFormat.yMEd().format(_selectedDate)),
+                    onPressed: _selectDate,
+                    child: Text(DateFormat('dd/MM/yyyy').format(_selectedDate)),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(16.0),

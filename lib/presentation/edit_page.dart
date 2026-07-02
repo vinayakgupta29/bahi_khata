@@ -6,6 +6,7 @@ import 'package:personal_bahi_khata/data/database.dart';
 import 'package:personal_bahi_khata/data/expenses.dart';
 import 'package:personal_bahi_khata/main.dart';
 import 'package:personal_bahi_khata/util/constants.dart';
+import 'package:personal_bahi_khata/util/tag_utils.dart';
 
 class EditPage extends StatefulWidget {
   final Expense expense;
@@ -16,12 +17,11 @@ class EditPage extends StatefulWidget {
 }
 
 class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
-  var tags = ["Food", "Fast Food", "Donation", "Travel", "Other"];
+  var tags = List<String>.from(defaultTags);
   List<String> selectedTags = [];
   final List<Expense> _foundExpense = [];
   final _titlecontroller = TextEditingController();
   final _amountController = TextEditingController();
-  final DataBase db = DataBase();
   bool _isDebit = true;
   DateTime now = DateTime.now();
   DateTime _selectedDate = DateTime.now();
@@ -44,7 +44,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
   // }
 
   // save new task
-  void saveNewExpense() {
+  void updateExpense() {
     setState(() {
       int index = DataBase.expenses.indexWhere(
         (e) => e.id == widget.expense.id,
@@ -55,7 +55,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
           date: widget.expense.date,
           id: widget.expense.id,
           amount: double.parse(_amountController.text).toString(),
-          label: selectedTags,
+          label: normalizeTags(selectedTags),
           isDebit: _isDebit,
           isSMS: widget.expense.isSMS,
         );
@@ -106,7 +106,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
     _selectedDate = DateTime.parse(
       widget.expense.date ?? DateTime.now().toIso8601String(),
     );
-    selectedTags = widget.expense.label ?? [];
+    selectedTags = normalizeTags(widget.expense.label);
   }
 
   void _animatePlusIcon() {
@@ -131,6 +131,62 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
     });
   }
 
+  InputDecoration _fieldDecoration({required String label, String? errorText}) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: hintcol),
+      errorText: errorText,
+      filled: true,
+      fillColor: itemcolor,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Colors.white24),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: floatingButtonColor, width: 1.4),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Colors.redAccent),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1.4),
+      ),
+    );
+  }
+
+  Future<void> _selectDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      firstDate: DateTime(now.year - 5),
+      lastDate: DateTime(2200),
+      initialDate: _selectedDate,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: floatingButtonColor,
+              onPrimary: buttonTextColor,
+              surface: bgcolor,
+              onSurface: textcolor,
+            ),
+            dialogTheme: const DialogThemeData(backgroundColor: bgcolor),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -141,6 +197,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bgcolor,
       body: SafeArea(
         child: GestureDetector(
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -149,21 +206,47 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  Align(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: textcolor,
+                          ),
+                        ),
+                      ),Center(
+                        child: Text("Edit Page", style: TextStyle(color: Colors.white), )
+                      ),
+                      SizedBox(width: MediaQuery.of(context).size.width*0.1,)
+                    ],
+                  ),
+                  const Align(
                     alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        "Edit Expense",
+                        style: TextStyle(
+                          color: textcolor,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
                       controller: _titlecontroller,
+                      style: const TextStyle(color: textcolor),
                       inputFormatters: [LengthLimitingTextInputFormatter(50)],
-                      decoration: InputDecoration(
-                        label: const Text("Name"),
-                        labelStyle: const TextStyle(color: Color(0xFF69656F)),
+                      decoration: _fieldDecoration(
+                        label: "Name",
                         errorText: _validate ? "Please Fill the Name" : null,
                       ),
                       textInputAction: TextInputAction.next,
@@ -180,15 +263,15 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
                       controller: _amountController,
+                      style: const TextStyle(color: textcolor),
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
                           RegExp(r'^\d+\.?\d{0,2}$'),
                         ),
                       ],
-                      decoration: InputDecoration(
-                        label: const Text("Amount"),
-                        labelStyle: const TextStyle(color: Color(0xFF69656F)),
+                      decoration: _fieldDecoration(
+                        label: "Amount",
                         errorText: _validate ? "Please Fill the Amount" : null,
                       ),
                     ),
@@ -203,10 +286,11 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                         AutocompleteOnSelected<String> onSelected,
                         Iterable<String> options,
                       ) {
-                        return ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 200),
+                        return SizedBox(
+                          height: 200,
                           child: Material(
-                            color: Colors.white,
+                            type: MaterialType.canvas,
+                            color: itemcolor,
                             child: ListView(
                               shrinkWrap: true,
                               padding: EdgeInsets.zero,
@@ -221,7 +305,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                                           right: 25.0,
                                         ),
                                         child: Card(
-                                          color: Colors.white,
+                                          color: bgcolor,
                                           child: Container(
                                             width:
                                                 MediaQuery.of(
@@ -229,7 +313,12 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                                                 ).size.width -
                                                 20,
                                             padding: const EdgeInsets.all(10),
-                                            child: Text(opt),
+                                            child: Text(
+                                              opt,
+                                              style: const TextStyle(
+                                                color: textcolor,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -255,11 +344,15 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "Tags",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: const Text(
+                                    "Tags",
+                                    style: TextStyle(
+                                      color: textcolor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
                                 ),
                                 Wrap(
@@ -271,7 +364,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                                       selectedTags
                                           .map(
                                             (e) => Chip(
-                                              backgroundColor: Colors.blueGrey,
+                                              backgroundColor: chipColor,
                                               labelPadding:
                                                   const EdgeInsets.only(
                                                     left: 8.0,
@@ -304,20 +397,25 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                                           )
                                           .toList(),
                                 ),
-                                TextField(
-                                  decoration: const InputDecoration(
-                                    labelText: "Enter Tag",
-                                    hintStyle: TextStyle(
-                                      color: Colors.white54,
-                                    ), // Hint text color
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: TextField(
+                                  style: const TextStyle(color: textcolor),
+                                  inputFormatters: [
+                                    LengthLimitingTextInputFormatter(30),
+                                    UppercaseTagInputFormatter(),
+                                  ],
+                                  decoration: _fieldDecoration(
+                                    label: "Enter Tag",
                                   ),
                                   controller: selectedTagController,
                                   focusNode: focusNode,
                                   onSubmitted: (String value) {
-                                    if (!selectedTags.contains(value)) {
-                                      if (value.isNotEmpty) {
+                                    final normalizedValue = normalizeTag(value);
+                                    if (!selectedTags.contains(normalizedValue)) {
+                                      if (normalizedValue.isNotEmpty) {
                                         setState(() {
-                                          selectedTags.add(value);
+                                          selectedTags.add(normalizedValue);
                                         });
                                       }
                                       selectedTagController.clear();
@@ -326,6 +424,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                                     }
                                   },
                                 ),
+                              ),
                               ],
                             ),
                           ),
@@ -339,9 +438,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                           matches.addAll(tags);
 
                           matches.retainWhere((s) {
-                            return s.toLowerCase().contains(
-                              textEditingValue.text.toLowerCase(),
-                            );
+                            return s.contains(textEditingValue.text.toUpperCase());
                           });
                           return matches;
                         }
@@ -349,7 +446,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                       onSelected: (String option) {
                         if (!selectedTags.contains(option)) {
                           setState(() {
-                            selectedTags.add(option);
+                            selectedTags.add(normalizeTag(option));
                             _selectedTagController.clear();
                           });
                         }
@@ -357,21 +454,9 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      showDatePicker(
-                        context: context,
-                        firstDate: DateTime(now.year - 5),
-                        lastDate: DateTime(2200),
-                        initialEntryMode: DatePickerEntryMode.calendarOnly,
-                      ).then((picked) {
-                        if (picked != null) {
-                          setState(() {
-                            _selectedDate = picked;
-                          });
-                        }
-                      });
-                    },
-                    child: Text((DateFormat.yMEd().format(_selectedDate))),
+                    style: TextButton.styleFrom(foregroundColor: textcolor),
+                    onPressed: _selectDate,
+                    child: Text(DateFormat('dd/MM/yyyy').format(_selectedDate)),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -385,6 +470,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                               Text(
                                 "Credit",
                                 style: TextStyle(
+                                  color: Colors.white70,
                                   fontWeight:
                                       _isDebit
                                           ? FontWeight.normal
@@ -466,6 +552,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                                       _isDebit
                                           ? FontWeight.bold
                                           : FontWeight.normal,
+                                  color: Colors.white70,
                                 ),
                               ),
                               AnimatedBuilder(
@@ -508,16 +595,19 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                             backgroundColor: WidgetStatePropertyAll(
                               floatingButtonColor,
                             ),
+                            foregroundColor: const WidgetStatePropertyAll(
+                              buttonTextColor,
+                            ),
                           ),
                           onPressed: () {
                             setState(() {
                               _validate = _amountController.text.isEmpty;
                             });
-                            _validate ? null : saveNewExpense();
+                            _validate ? null : updateExpense();
                             debugPrint("$_foundExpense");
                           },
                           child: const Text(
-                            "Save",
+                            "Add",
                             style: TextStyle(color: buttonTextColor),
                           ),
                         ),

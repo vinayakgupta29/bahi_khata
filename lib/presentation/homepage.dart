@@ -5,19 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
+
+
+import 'package:personal_bahi_khata/util/constants.dart';
 import 'package:personal_bahi_khata/data/database.dart';
 import 'package:personal_bahi_khata/data/expenses.dart';
 import 'package:personal_bahi_khata/data/pbke_file.dart';
 import 'package:personal_bahi_khata/data/telephony_service.dart';
 import 'package:personal_bahi_khata/data/sms_api.dart';
 import 'package:personal_bahi_khata/main.dart';
-import 'package:personal_bahi_khata/presentation/bottomsheet.dart';
+import 'package:personal_bahi_khata/presentation/add_payment.dart';
 import 'package:personal_bahi_khata/presentation/edit_page.dart';
 import 'package:personal_bahi_khata/presentation/private_feature.dart';
 import 'package:personal_bahi_khata/presentation/searchpage.dart';
 import 'package:personal_bahi_khata/presentation/splash_screen.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:personal_bahi_khata/util/constants.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,7 +29,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  DataBase db = DataBase();
   var tags = ["Food", "Fast Food", "Donation", "Travel", "Other"];
   List<Expense> _foundExpense = [];
   List<Widget> widgets = [];
@@ -137,7 +138,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       DataBase.expenses.removeWhere((item) => item.id == id);
     });
-    db.updateDatabase(null);
+    DataBase.persistCurrentExpenses();
     debugPrint(DataBase.expenses.toString());
     setState(() {
       expenseNotifier.update(DataBase.expenses);
@@ -151,15 +152,15 @@ class _HomePageState extends State<HomePage> {
     }
     var status = await Permission.accessMediaLocation.status;
 
-    if (status != PermissionStatus.granted && mounted) {
+    if (status == PermissionStatus.granted && mounted) {
       setState(() {
         DataBase.isPermitted = true;
       });
-      openAppSettings();
     } else {
       setState(() {
         DataBase.isPermitted = false;
       });
+      openAppSettings();
     }
   }
 
@@ -198,6 +199,52 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
     );
+  }
+
+  Future<bool> _showDuplicateImportDialog(
+    Expense incoming,
+    Expense existing,
+  ) async {
+    if (!mounted) {
+      return false;
+    }
+
+    final labels =
+        (incoming.label ?? const <String>[]).isEmpty
+            ? "-"
+            : incoming.label!.join(", ");
+
+    return await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                backgroundColor: bgcolor,
+                title: const Text(
+                  "Duplicate Expense",
+                  style: TextStyle(color: textcolor),
+                ),
+                content: Text(
+                  "A matching expense already exists.\n\n"
+                  "Name: ${incoming.name ?? "-"}\n"
+                  "Amount: ${incoming.amount ?? "-"}\n"
+                  "Date: ${incoming.date ?? "-"}\n"
+                  "Labels: $labels\n\n"
+                  "Add it anyway with a new id?",
+                  style: const TextStyle(color: textcolor),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text("Skip"),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text("Add"),
+                  ),
+                ],
+              ),
+        ) ??
+        false;
   }
 
   Future<String?> _showFormatDialog(String title) async {
@@ -252,24 +299,34 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: [selectedFormat],
-    );
+    final result = await FilePicker.pickFiles(type: FileType.any);
 
     if (result == null || result.files.single.path == null) {
       return;
     }
 
+    final pickedPath = result.files.single.path!;
+    if (DataBase.getFileExtension(pickedPath) != selectedFormat) {
+      await _showMessageDialog("Import", DataBase.unsupportedFileTypeMessage);
+      return;
+    }
+
     try {
-      await DataBase.importExpensesFromFile(result.files.single.path!);
+      await DataBase.importExpensesFromFile(
+        pickedPath,
+        onDuplicate: (incoming, existing) {
+          return _showDuplicateImportDialog(incoming, existing);
+        },
+      );
       if (!mounted) {
         return;
       }
       setState(() {
         _syncLocalExpenseState();
       });
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint("[IMPORT-UI] Import failed for $pickedPath: $e");
+      debugPrintStack(label: "[IMPORT-UI] stack", stackTrace: st);
       final message =
           e is FormatException ? e.message : DataBase.unsupportedFileMessage;
       await _showMessageDialog("Import", message);
@@ -297,9 +354,7 @@ class _HomePageState extends State<HomePage> {
               : PbkeFile.mimeType;
 
       await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(exportedFile.path, mimeType: mimeType)],
-        ),
+        ShareParams(files: [XFile(exportedFile.path, mimeType: mimeType)]),
       );
     } catch (e) {
       final message =
@@ -310,27 +365,31 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _toggleSmsExpenses(bool enabled) async {
     try {
-      if (enabled) {
-        final hasPermission = await SmsApi.ensureSmsPermission();
-        if (!hasPermission) {
-          await _showMessageDialog(
-            "SMS",
-            "SMS permission is required to enable SMS expenses",
-          );
-          return;
+      if (Platform.isAndroid) {
+        if (enabled) {
+          final hasPermission = await SmsApi.ensureSmsPermission();
+          if (!hasPermission) {
+            await _showMessageDialog(
+              "SMS",
+              "SMS permission is required to enable SMS expenses",
+            );
+            return;
+          }
         }
-      }
 
-      await DataBase.setSmsExpensesEnabled(enabled);
-      _syncLocalExpenseState();
-
-      if (enabled) {
-        await SmsApi.filterSms();
+        await DataBase.setSmsExpensesEnabled(enabled);
         _syncLocalExpenseState();
+
+        if (enabled) {
+          await SmsApi.filterSms();
+          _syncLocalExpenseState();
+        }
+      } else {
+        await _showMessageDialog("SMS", "This is an android Specific Feature");
       }
     } catch (e) {
       final message =
-          e is FormatException ? e.message : DataBase.unsupportedFileMessage;
+          e is FormatException ? DataBase.unsupportedFileMessage : e.toString();
       await _showMessageDialog("SMS", message);
     }
   }
@@ -536,22 +595,24 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                   const PrivateFeatureTile(),
-                  SwitchListTile(
-                    activeThumbColor: Colors.green,
-                    title: const Text(
-                      "SMS Expenses",
-                      style: TextStyle(color: textcolor),
-                    ),
-                    subtitle: const Text(
-                      "Enable or remove SMS-based expenses",
-                      style: TextStyle(color: hintcol),
-                    ),
-                    value: DataBase.smsExpensesEnabled,
-                    onChanged: (value) async {
-                      Navigator.of(context).pop();
-                      await _toggleSmsExpenses(value);
-                    },
-                  ),
+                  Platform.isAndroid
+                      ? SwitchListTile(
+                        activeThumbColor: Colors.green,
+                        title: const Text(
+                          "SMS Expenses",
+                          style: TextStyle(color: textcolor),
+                        ),
+                        subtitle: const Text(
+                          "Enable or remove SMS-based expenses",
+                          style: TextStyle(color: hintcol),
+                        ),
+                        value: DataBase.smsExpensesEnabled,
+                        onChanged: (value) async {
+                          Navigator.of(context).pop();
+                          await _toggleSmsExpenses(value);
+                        },
+                      )
+                      : Container(),
                 ],
               ),
             ),
@@ -803,7 +864,7 @@ class _HomePageState extends State<HomePage> {
                   PageRouteBuilder(
                     pageBuilder:
                         (context, animation, secondaryAnimation) =>
-                            const PaymntBottomSheet(),
+                            const AddPaymentPage(),
                     transitionsBuilder: (
                       context,
                       animation,

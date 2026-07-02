@@ -148,6 +148,51 @@ void main() {
     expect(PbkeFile.readFileVersion(legacyHeader), '');
   });
 
+  test(
+    'pbke 01_10 round trips with encrypted payload and iv+key footer',
+    () async {
+      final file = File('${tempDir.path}/roundtrip.pbke');
+      final inputJson = jsonEncode({
+        'expenses': [
+          buildExpense(id: 'pbke1', date: '2025-03-01T00:00:00.000').toJson(),
+        ],
+        'smsEnabled': true,
+      });
+
+      await PbkeFile.writePbkeFile(
+        file.path,
+        inputJson,
+        DateTime.utc(2025, 3, 1),
+        fileVersion: PbkeFile.version,
+      );
+
+      final bytes = await file.readAsBytes();
+      final footerLength = PbkeFile.footerLengthForMode(
+        PbkeFormatMode.v_01_10,
+      );
+      final encryptedPayload = PbkeFile.extractEncryptedPayload(bytes);
+
+      expect(
+        utf8.decode(bytes.sublist(0, PbkeFile.signature.length)),
+        PbkeFile.signature,
+      );
+      expect(PbkeFile.readFileVersion(bytes), PbkeFile.version);
+      expect(
+        encryptedPayload.length,
+        bytes.length - PbkeFile.headerSize - footerLength,
+      );
+
+      final readResult = await PbkeFile.readPbkeFile(file.path);
+
+      expect(readResult, isNotNull);
+      expect(readResult!.version, PbkeFile.version);
+      expect(readResult.data['smsEnabled'], isTrue);
+      expect((readResult.data['expenses'] as List), hasLength(1));
+    },
+    skip:
+        'zstandard test plugin is unavailable in this host test environment',
+  );
+
   test('json import merges into current db and keeps descending date order', () async {
     DataBase.expenses = [
       buildExpense(id: 'base', date: '2024-01-01T00:00:00.000'),
@@ -188,6 +233,28 @@ void main() {
     );
   });
 
+  test('json import accepts missing id and assigns a new one', () async {
+    final file = await createImportFile(
+      'missing_id.json',
+      jsonEncode([
+        {
+          'name': 'No Id',
+          'label': ['Food'],
+          'date': '2025-04-01T00:00:00.000',
+          'amount': '10',
+          'isDebit': true,
+          'isSMS': false,
+        },
+      ]),
+    );
+
+    final imported = await DataBase.importExpensesFromFile(file.path);
+
+    expect(imported, hasLength(1));
+    expect(imported.first.id, isNotNull);
+    expect(imported.first.id, isNotEmpty);
+  });
+
   test('csv import accepts expense columns and parses labels', () async {
     final file = await createImportFile(
       'import.csv',
@@ -200,8 +267,25 @@ void main() {
     final imported = await DataBase.importExpensesFromFile(file.path);
 
     expect(imported, hasLength(1));
-    expect(imported.first.label, ['Food', 'Office']);
+    expect(imported.first.label, ['FOOD', 'OFFICE']);
     expect(imported.first.id, 'csv1');
+  });
+
+  test('csv import accepts rows without an id column and assigns a new one', () async {
+    final file = await createImportFile(
+      'import_without_id.csv',
+      [
+        'name,label,date,amount,isDebit,isSMS',
+        '"Lunch","Food|Office","2025-02-01T00:00:00.000","150.0","true","false"',
+      ].join('\n'),
+    );
+
+    final imported = await DataBase.importExpensesFromFile(file.path);
+
+    expect(imported, hasLength(1));
+    expect(imported.first.id, isNotNull);
+    expect(imported.first.id, isNotEmpty);
+    expect(imported.first.label, ['FOOD', 'OFFICE']);
   });
 
   test('csv import rejects invalid headers or types', () async {
@@ -217,6 +301,74 @@ void main() {
       () => DataBase.importExpensesFromFile(file.path),
       throwsFormatException,
     );
+  });
+
+  test('duplicate imported expense is skipped when user rejects it', () async {
+    DataBase.expenses = [
+      buildExpense(id: '1', date: '2025-02-01T00:00:00.000', amount: '150.0'),
+    ];
+
+    final file = await createImportFile(
+      'duplicate.json',
+      jsonEncode([
+        buildExpense(id: '99', date: '2025-02-01T00:00:00.000', amount: '150.0')
+            .copyWith(name: 'Expense 1')
+            .toJson(),
+      ]),
+    );
+
+    final imported = await DataBase.importExpensesFromFile(
+      file.path,
+      onDuplicate: (_, __) async => false,
+    );
+
+    expect(imported, hasLength(1));
+    expect(imported.first.id, '1');
+  });
+
+  test('duplicate imported expense is added with a new incremental id when approved', () async {
+    DataBase.expenses = [
+      buildExpense(id: '7', date: '2025-02-01T00:00:00.000', amount: '150.0'),
+    ];
+
+    final file = await createImportFile(
+      'duplicate_add.json',
+      jsonEncode([
+        buildExpense(id: '7', date: '2025-02-01T00:00:00.000', amount: '150.0')
+            .copyWith(name: 'Expense 7')
+            .toJson(),
+      ]),
+    );
+
+    final imported = await DataBase.importExpensesFromFile(
+      file.path,
+      onDuplicate: (_, __) async => true,
+    );
+
+    expect(imported, hasLength(2));
+    expect(imported.map((expense) => expense.id).toSet(), {'7', '8'});
+  });
+
+  test('id collision only gets a new incremental id automatically', () async {
+    DataBase.expenses = [
+      buildExpense(id: '10', date: '2025-02-01T00:00:00.000', amount: '150.0'),
+    ];
+
+    final file = await createImportFile(
+      'id_collision.json',
+      jsonEncode([
+        buildExpense(
+          id: '10',
+          date: '2025-02-03T00:00:00.000',
+          amount: '200.0',
+        ).toJson(),
+      ]),
+    );
+
+    final imported = await DataBase.importExpensesFromFile(file.path);
+
+    expect(imported, hasLength(2));
+    expect(imported.map((expense) => expense.id).toSet(), {'10', '11'});
   });
 
   test('pbke import validates the file version before merging', () async {

@@ -1,0 +1,761 @@
+[
+    {
+        "name": "auto",
+        "label": [
+            "transport"
+        ],
+        "id": 1,
+        "date": "2026-03-07",
+        "amount": 20,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 2,
+        "date": "2026-03-07",
+        "amount": 140,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "salad",
+        "label": [
+            "food"
+        ],
+        "id": 3,
+        "date": "2026-03-07",
+        "amount": 20,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "fruits",
+        "label": [
+            "food"
+        ],
+        "id": 4,
+        "date": "2026-03-08",
+        "amount": 30,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "breakfast",
+        "label": [
+            "food"
+        ],
+        "id": 5,
+        "date": "2026-03-08",
+        "amount": 25,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "ardalite glue (resolved)",
+        "label": [
+            "hardware"
+        ],
+        "id": 6,
+        "date": "2026-03-09",
+        "amount": 300,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "Glucose",
+        "label": [
+            "food"
+        ],
+        "id": 7,
+        "date": "2026-03-09",
+        "amount": 55,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "vaseline + Conditioner",
+        "label": [
+            "personal"
+        ],
+        "id": 8,
+        "date": "2026-03-09",
+        "amount": 135,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "amool cool",
+        "label": [
+            "food"
+        ],
+        "id": 9,
+        "date": "2026-03-09",
+        "amount": 25,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "faluda",
+        "label": [
+            "food"
+        ],
+        "id": 10,
+        "date": "2026-03-11",
+        "amount": 100,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "dhoti (resolved)",
+        "label": [
+            "personal"
+        ],
+        "id": 11,
+        "date": "2026-03-11",
+        "amount": 250,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 12,
+        "date": "2026-03-11",
+        "amount": 135,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "bus to awadh",
+        "label": [
+            "transport"
+        ],
+        "id": 13,
+        "date": "2026-03-12",
+        "amount": 150,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "bus from Awadh",
+        "label": [
+            "transport"
+        ],
+        "id": 14,
+        "date": "2026-03-12",
+        "amount": 190,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "lassi",
+        "label": [
+            "food"
+        ],
+        "id": 15,
+        "date": "2026-03-12",
+        "amount": 50,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "sugarcane juice",
+        "label": [
+            "food"
+        ],
+        "id": 16,
+        "date": "2026-03-12",
+        "amount": 20,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "phool mala",
+        "label": [
+            "personal"
+        ],
+        "id": 17,
+        "date": "2026-03-12",
+        "amount": 40,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "auto",
+        "label": [
+            "transport"
+        ],
+        "id": 18,
+        "date": "2026-03-12",
+        "amount": 60,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 19,
+        "date": "2026-03-13",
+        "amount": 150,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 20,
+        "date": "2026-03-14",
+        "amount": 41,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 21,
+        "date": "2026-03-15",
+        "amount": 185,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "auto",
+        "label": [
+            "transport"
+        ],
+        "id": 22,
+        "date": "2026-03-16",
+        "amount": 20,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "safety shoes",
+        "label": [
+            "personal"
+        ],
+        "id": 23,
+        "date": "2026-03-16",
+        "amount": 500,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 24,
+        "date": "2026-03-16",
+        "amount": 190,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "breakfast",
+        "label": [
+            "food"
+        ],
+        "id": 25,
+        "date": "2026-03-17",
+        "amount": 40,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 26,
+        "date": "2026-03-17",
+        "amount": 61,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "lunch",
+        "label": [
+            "food"
+        ],
+        "id": 27,
+        "date": "2026-03-18",
+        "amount": 41,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "auto",
+        "label": [
+            "transport"
+        ],
+        "id": 28,
+        "date": "2026-03-18",
+        "amount": 50,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 29,
+        "date": "2026-03-18",
+        "amount": 190,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 30,
+        "date": "2026-03-19",
+        "amount": 41,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "auto",
+        "label": [
+            "transport"
+        ],
+        "id": 31,
+        "date": "2026-03-19",
+        "amount": 20,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 32,
+        "date": "2026-03-20",
+        "amount": 41,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "auto",
+        "label": [
+            "transport"
+        ],
+        "id": 33,
+        "date": "2026-03-20",
+        "amount": 70,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 34,
+        "date": "2026-03-20",
+        "amount": 240,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "breakfast",
+        "label": [
+            "food"
+        ],
+        "id": 35,
+        "date": "2026-03-21",
+        "amount": 150,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "room rent",
+        "label": [
+            "rent"
+        ],
+        "id": 36,
+        "date": "2026-03-21",
+        "amount": 5200,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "lunch",
+        "label": [
+            "food"
+        ],
+        "id": 37,
+        "date": "2026-03-21",
+        "amount": 120,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "dinner",
+        "label": [
+            "food"
+        ],
+        "id": 38,
+        "date": "2026-03-21",
+        "amount": 100,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "auto",
+        "label": [
+            "transport"
+        ],
+        "id": 39,
+        "date": "2026-03-22",
+        "amount": 30,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 40,
+        "date": "2026-03-22",
+        "amount": 61,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "auto",
+        "label": [
+            "transport"
+        ],
+        "id": 41,
+        "date": "2026-03-23",
+        "amount": 30,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 42,
+        "date": "2026-03-23",
+        "amount": 41,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "Knife",
+        "label": [
+            "hardware"
+        ],
+        "id": 43,
+        "date": "2026-03-23",
+        "amount": 40,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 44,
+        "date": "2026-03-23",
+        "amount": 150,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 45,
+        "date": "2026-03-24",
+        "amount": 55,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "fruits",
+        "label": [
+            "food"
+        ],
+        "id": 46,
+        "date": "2026-03-24",
+        "amount": 60,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 47,
+        "date": "2026-03-24",
+        "amount": 150,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 48,
+        "date": "2026-03-25",
+        "amount": 41,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 49,
+        "date": "2026-03-25",
+        "amount": 150,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "dtdtc courier",
+        "label": [
+            "courier"
+        ],
+        "id": 50,
+        "date": "2026-03-25",
+        "amount": 3600,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 51,
+        "date": "2026-03-26",
+        "amount": 45,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 52,
+        "date": "2026-03-26",
+        "amount": 150,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 53,
+        "date": "2026-03-27",
+        "amount": 45,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 54,
+        "date": "2026-03-27",
+        "amount": 150,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 55,
+        "date": "2026-03-28",
+        "amount": 41,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 56,
+        "date": "2026-03-28",
+        "amount": 150,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "lassi",
+        "label": [
+            "food"
+        ],
+        "id": 57,
+        "date": "2026-03-28",
+        "amount": 50,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "bus",
+        "label": [
+            "transport"
+        ],
+        "id": 58,
+        "date": "2026-03-29",
+        "amount": 60,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "rapido",
+        "label": [
+            "transport"
+        ],
+        "id": 59,
+        "date": "2026-03-29",
+        "amount": 64,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "auto",
+        "label": [
+            "transport"
+        ],
+        "id": 60,
+        "date": "2026-03-30",
+        "amount": 60,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 61,
+        "date": "2026-03-30",
+        "amount": 45,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "screwdriver",
+        "label": [
+            "hardware"
+        ],
+        "id": 62,
+        "date": "2026-03-30",
+        "amount": 30,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "alan key box",
+        "label": [
+            "hardware"
+        ],
+        "id": 63,
+        "date": "2026-03-30",
+        "amount": 230,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "food",
+        "label": [
+            "food"
+        ],
+        "id": 64,
+        "date": "2026-03-30",
+        "amount": 150,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "auto",
+        "label": [
+            "ravel"
+        ],
+        "id": 65,
+        "date": "2026-03-31",
+        "amount": 40,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "bus",
+        "label": [
+            "travel"
+        ],
+        "id": 66,
+        "date": "2026-03-31",
+        "amount": 45,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "rapido",
+        "label": [
+            "travel"
+        ],
+        "id": 67,
+        "date": "2026-03-31",
+        "amount": 135,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "jumper cable",
+        "label": [
+            "hardware"
+        ],
+        "id": 68,
+        "date": "2026-03-31",
+        "amount": 50,
+        "isDebit": true,
+        "isSMS": false
+    },
+    {
+        "name": "lunch",
+        "label": [
+            "food"
+        ],
+        "id": 69,
+        "date": "2026-03-31",
+        "amount": 150,
+        "isDebit": true,
+        "isSMS": false
+    }
+]

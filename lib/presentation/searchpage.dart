@@ -122,7 +122,7 @@ class _SearchPageState extends State<SearchPage> {
     debugPrint("selected date : ${DataBase.selectedDate?.toIso8601String()}");
     return PopScope(
       canPop: true,
-      onPopInvoked: (val) {
+      onPopInvokedWithResult: (val, res) {
         if (widget.onPopCallback != null) {
           widget.onPopCallback!();
         }
@@ -140,7 +140,10 @@ class _SearchPageState extends State<SearchPage> {
           ),
           backgroundColor: Colors.black,
           actions: [
-            IconButton(onPressed: ()=>Navigator.pop(context), icon: Icon(Icons.arrow_back_ios))
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.arrow_back_ios),
+            ),
           ],
           leading: IconButton(
             icon: const Icon(Icons.check_rounded, color: Colors.white),
@@ -201,14 +204,12 @@ class _SearchPageState extends State<SearchPage> {
                     menuMaxHeight: 300,
                     items: [
                       const DropdownMenuItem<int>(value: 0, child: Text("---")),
-                      ...DataBase.uniqueyears
-                          .map(
-                            (e) => DropdownMenuItem<int>(
-                              value: e,
-                              child: Text(e.toString()),
-                            ),
-                          )
-                          ,
+                      ...DataBase.uniqueyears.map(
+                        (e) => DropdownMenuItem<int>(
+                          value: e,
+                          child: Text(e.toString()),
+                        ),
+                      ),
                     ],
                     onChanged: (int? val) {
                       setState(() {

@@ -49,3 +49,7 @@ app.*.map.json
 *.jks
 *.pem
 *.properties
+datal.json
+*.md
+!README.md
+output.html

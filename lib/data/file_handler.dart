@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:personal_bahi_khata/data/database.dart';
 import 'package:personal_bahi_khata/presentation/homepage.dart';
 import 'package:personal_bahi_khata/presentation/opened_file.dart';
 
@@ -48,6 +47,9 @@ class _FileHandlerState extends State<FileHandler> with WidgetsBindingObserver {
 
   void getOpenFileUrl() async {
     dynamic url = await platform.invokeMethod("handleOpenFileUrl");
+    if (!mounted) {
+      return;
+    }
     debugPrint("handleOpenFileUrl $url");
     if (url != null && url != openFileUrl) {
       setState(() {
@@ -56,17 +58,24 @@ class _FileHandlerState extends State<FileHandler> with WidgetsBindingObserver {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
+        if (!mounted) {
+          return;
+        }
+        final navigator = Navigator.of(context);
         var intent = url; //await IntentHandler.getIntent();
         debugPrint("intent data $intent");
-        if (intent != null && mounted && DataBase.isPermitted) {
+        if (intent != null) {
           String filePath = intent.toString();
-          await Navigator.of(context).pushReplacement(
+          await navigator.pushReplacement(
             MaterialPageRoute(
               builder: (context) => OpenedFilePage(filePath: filePath),
             ),
           );
-        } else if (mounted) {
-          await Navigator.of(context).pushReplacement(
+        } else {
+          if (!mounted) {
+            return;
+          }
+          await navigator.pushReplacement(
             MaterialPageRoute(builder: (context) => const HomePage()),
           );
         }

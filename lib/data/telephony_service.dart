@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class TelephonyService {
@@ -9,7 +10,7 @@ class TelephonyService {
       final bool result = await platform.invokeMethod('isTelephonyAvailable');
       return result;
     } on PlatformException catch (e) {
-      print("Error checking telephony: ${e.message}");
+      debugPrint("Error checking telephony: ${e.message}");
       return false;
     }
   }
