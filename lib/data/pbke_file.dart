@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter/foundation.dart';
 import 'package:personal_bahi_khata/data/encryption.dart';
 import 'package:zstandard/zstandard.dart';
@@ -85,9 +84,12 @@ class PbkeFile {
   }
 
   static String _previewBytes(List<int> bytes, {int count = 24}) {
-    final preview = bytes.take(count).map((byte) {
-      return byte.toRadixString(16).padLeft(2, '0');
-    }).join(' ');
+    final preview = bytes
+        .take(count)
+        .map((byte) {
+          return byte.toRadixString(16).padLeft(2, '0');
+        })
+        .join(' ');
     return bytes.length > count ? "$preview ..." : preview;
   }
 
@@ -270,7 +272,10 @@ class PbkeFile {
     final footerStart = fileBytes.length - footerLength;
     final encryptedPayload = fileBytes.sublist(currentHeaderSize, footerStart);
     final ivBytes = fileBytes.sublist(footerStart, footerStart + ivLength);
-    final keyBytes = fileBytes.sublist(footerStart + ivLength, fileBytes.length);
+    final keyBytes = fileBytes.sublist(
+      footerStart + ivLength,
+      fileBytes.length,
+    );
 
     if (ivBytes.length != ivLength || keyBytes.length != keyLength) {
       throw const FormatException(unsupportedFileMessage);
@@ -355,12 +360,11 @@ class PbkeFile {
       case PbkeFormatMode.v_01_10:
         final keyBytes = _randomBytes(keyLengthForMode(mode));
         final ivBytes = _randomBytes(ivLengthForMode(mode));
-        final key = enc.Key(Uint8List.fromList(keyBytes));
-        final iv = enc.IV(Uint8List.fromList(ivBytes));
-        final encryptedPayload =
-            enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm))
-                .encryptBytes(compressedData, iv: iv)
-                .bytes;
+        final encryptedPayload = await EncryptionAES.encryptAESGCM(
+          compressedData,
+          keyBytes: keyBytes,
+          ivBytes: ivBytes,
+        );
         return _PbkeFooter(
           keyBytes: keyBytes,
           ivBytes: ivBytes,

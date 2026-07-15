@@ -25,7 +25,6 @@ class DataBase {
 
   static const String signature = PbkeFile.signature;
   static const String version = PbkeFile.version;
-  static const int headerSize = PbkeFile.headerSize;
 
   static bool isPermitted = false;
 
@@ -36,7 +35,6 @@ class DataBase {
 
   static Future<Directory> _getStorageDirectory() async {
     if (Platform.isAndroid) {
-      Path();
       final directory = await getExternalStorageDirectory();
       if (directory == null) {
         throw const FileSystemException("Storage directory is unavailable");
@@ -57,12 +55,12 @@ class DataBase {
     return (await getApplicationSupportDirectory()).create(recursive: true);
   }
 
-
   static String getFileExtension(String filePath) {
     final lastDot = filePath.lastIndexOf(".");
     if (lastDot == -1 || lastDot == filePath.length - 1) {
       return "";
     }
+    debugPrint(" Extension : ${filePath.substring(lastDot + 1).toLowerCase()}");
     return filePath.substring(lastDot + 1).toLowerCase();
   }
 

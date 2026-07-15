@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
-
 import 'package:personal_bahi_khata/util/constants.dart';
 import 'package:personal_bahi_khata/data/database.dart';
 import 'package:personal_bahi_khata/data/expenses.dart';
@@ -29,10 +28,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  var tags = ["Food", "Fast Food", "Donation", "Travel", "Other"];
+  var tags = ["Food", "TRANSPORT", "Fast Food", "Donation", "Travel", "Other"];
   List<Expense> _foundExpense = [];
   List<Widget> widgets = [];
   File? file;
+  bool _showAddPaymentPane = false;
   // text controller
   String json = """[
     
@@ -293,6 +293,34 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  bool _isLandscapeTablet(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    debugPrint("${mediaQuery.size.height}, ${mediaQuery.size.width}");
+    return mediaQuery.orientation == Orientation.landscape &&
+        mediaQuery.size.width >= 840;
+  }
+
+  void _openAddPayment({required bool inPane}) {
+    if (inPane) {
+      setState(() {
+        _showAddPaymentPane = true;
+      });
+      return;
+    }
+
+    Navigator.push(context, _createAddPaymentRoute());
+  }
+
+  void _closeAddPaymentPane() {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _showAddPaymentPane = false;
+    });
+  }
+
   Future<void> _importExpenses() async {
     final selectedFormat = await _showFormatDialog("Import");
     if (selectedFormat == null) {
@@ -422,6 +450,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint(" is lanscape ${_isLandscapeTablet(context)}");
     return StreamBuilder<List<Expense>>(
       stream: expenseNotifier.stream,
       builder: (context, snapshot) {
@@ -659,191 +688,229 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           body: SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: groupedObjects.length * 2, // *2 for dividers
-                    itemBuilder: (context, index) {
-                      if (index.isOdd) {
-                        // Divider
-                        return Container(height: 0.000005);
-                      }
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final expensesList = Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: groupedObjects.length * 2, // *2 for dividers
+                        itemBuilder: (context, index) {
+                          if (index.isOdd) {
+                            // Divider
+                            return Container(height: 0.000005);
+                          }
 
-                      // Header or List Item
-                      int headerIndex = index ~/ 2;
-                      String monthYear = groupedObjects.keys.elementAt(
-                        headerIndex,
-                      );
-                      List<Expense> objects = groupedObjects[monthYear]!;
+                          // Header or List Item
+                          int headerIndex = index ~/ 2;
+                          String monthYear = groupedObjects.keys.elementAt(
+                            headerIndex,
+                          );
+                          List<Expense> objects = groupedObjects[monthYear]!;
 
-                      double sum = 0;
-                      for (var obj in objects) {
-                        obj.isDebit ?? true
-                            ? sum -= (double.parse(obj.amount ?? "0") * 100)
-                            : sum += (double.parse(obj.amount ?? "0") * 100);
-                      }
-                      sum /= 100;
-                      return Container(
-                        color: bgcolor,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Header with month and year
-                            SizedBox(
-                              height: 50,
-                              width: MediaQuery.of(context).size.width,
-                              child: Card(
-                                color: headerColor,
-                                elevation: 10,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        monthYear,
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: textcolor,
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 8.0,
-                                        ),
-                                        child: Text(
-                                          sum.toString(),
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color:
-                                                sum >= 0
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // const Divider(
-                            //   thickness: 0.5,
-                            // ),
-                            // List of items for that month and year
-                            for (Expense obj in objects)
-                              Column(
-                                key: ValueKey(
-                                  "expense-${DataBase.expenseIdentity(obj)}",
-                                ),
-                                children: [
-                                  Slidable(
-                                    key: ValueKey(
-                                      "slidable-${DataBase.expenseIdentity(obj)}",
-                                    ),
-                                    endActionPane: ActionPane(
-                                      motion: const StretchMotion(),
-                                      children: [
-                                        SlidableAction(
-                                          onPressed:
-                                              (context) =>
-                                                  deleteExpense(obj.id ?? ""),
-                                          label: "DELETE",
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      ],
-                                    ),
-                                    startActionPane: ActionPane(
-                                      motion: const StretchMotion(),
-                                      children: [
-                                        SlidableAction(
-                                          onPressed:
-                                              (context) => Navigator.of(
-                                                context,
-                                              ).push(_createEditRoute(obj)),
-                                          label: "EDIT",
-                                          backgroundColor: Colors.blue,
-                                        ),
-                                      ],
-                                    ),
-                                    child: ListTile(
-                                      tileColor: itemcolor,
-                                      title: Text(
-                                        obj.name ?? "hi",
-                                        style: const TextStyle(
-                                          color: textcolor,
-                                        ),
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                          double sum = 0;
+                          for (var obj in objects) {
+                            obj.isDebit ?? true
+                                ? sum -= (double.parse(obj.amount ?? "0") * 100)
+                                : sum +=
+                                    (double.parse(obj.amount ?? "0") * 100);
+                          }
+                          sum /= 100;
+                          return Container(
+                            color: bgcolor,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Header with month and year
+                                SizedBox(
+                                  height: 50,
+                                  width: double.infinity,
+                                  child: Card(
+                                    color: headerColor,
+                                    elevation: 10,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
                                         children: [
                                           Text(
-                                            DateFormat(
-                                              'E dd/MM/yyyy',
-                                            ).format(DateTime.parse(obj.date!)),
+                                            monthYear,
                                             style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
                                               color: textcolor,
                                             ),
                                           ),
-                                          SizedBox(
-                                            height: 50,
-                                            width:
-                                                MediaQuery.of(
-                                                  context,
-                                                ).size.width -
-                                                100,
-                                            child: ListView.builder(
-                                              shrinkWrap: true,
-                                              scrollDirection: Axis.horizontal,
-                                              itemCount: obj.label?.length ?? 0,
-                                              itemBuilder:
-                                                  (context, ind) => Padding(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 8.0,
-                                                        ),
-                                                    child: Chip(
-                                                      labelStyle:
-                                                          const TextStyle(
-                                                            fontSize: 12,
-                                                          ),
-                                                      label: Text(
-                                                        obj.label?[ind] ?? "hi",
-                                                      ),
-                                                    ),
-                                                  ),
+                                          const Spacer(),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 8.0,
+                                            ),
+                                            child: Text(
+                                              sum.toString(),
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color:
+                                                    sum >= 0
+                                                        ? Colors.green
+                                                        : Colors.red,
+                                              ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                      trailing: Text(
-                                        (obj.isDebit ?? false ? "- " : "+ ") +
-                                            (obj.amount ?? "N/A"),
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w900,
-                                          color:
-                                              (obj.isDebit ?? false)
-                                                  ? Colors.red
-                                                  : Colors.green,
-                                        ),
-                                      ),
                                     ),
                                   ),
-                                  const Divider(color: hintcol),
-                                ],
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+                                ),
+                                // const Divider(
+                                //   thickness: 0.5,
+                                // ),
+                                // List of items for that month and year
+                                for (Expense obj in objects)
+                                  Column(
+                                    key: ValueKey(
+                                      "expense-${DataBase.expenseIdentity(obj)}",
+                                    ),
+                                    children: [
+                                      Slidable(
+                                        key: ValueKey(
+                                          "slidable-${DataBase.expenseIdentity(obj)}",
+                                        ),
+                                        endActionPane: ActionPane(
+                                          motion: const StretchMotion(),
+                                          children: [
+                                            SlidableAction(
+                                              onPressed:
+                                                  (context) => deleteExpense(
+                                                    obj.id ?? "",
+                                                  ),
+                                              label: "DELETE",
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          ],
+                                        ),
+                                        startActionPane: ActionPane(
+                                          motion: const StretchMotion(),
+                                          children: [
+                                            SlidableAction(
+                                              onPressed:
+                                                  (context) => Navigator.of(
+                                                    context,
+                                                  ).push(_createEditRoute(obj)),
+                                              label: "EDIT",
+                                              backgroundColor: Colors.blue,
+                                            ),
+                                          ],
+                                        ),
+                                        child: ListTile(
+                                          tileColor: itemcolor,
+                                          title: Text(
+                                            obj.name ?? "hi",
+                                            style: const TextStyle(
+                                              color: textcolor,
+                                            ),
+                                          ),
+                                          subtitle: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                DateFormat(
+                                                  'E dd/MM/yyyy',
+                                                ).format(
+                                                  DateTime.parse(obj.date!),
+                                                ),
+                                                style: const TextStyle(
+                                                  color: textcolor,
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: 50,
+                                                width: double.infinity,
+                                                child: ListView.builder(
+                                                  shrinkWrap: true,
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  itemCount:
+                                                      obj.label?.length ?? 0,
+                                                  itemBuilder:
+                                                      (context, ind) => Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 8.0,
+                                                            ),
+                                                        child: Chip(
+                                                          labelStyle:
+                                                              const TextStyle(
+                                                                fontSize: 12,
+                                                              ),
+                                                          label: Text(
+                                                            obj.label?[ind] ??
+                                                                "hi",
+                                                          ),
+                                                        ),
+                                                      ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          trailing: Text(
+                                            (obj.isDebit ?? false
+                                                    ? "- "
+                                                    : "+ ") +
+                                                (obj.amount ?? "N/A"),
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w900,
+                                              color:
+                                                  (obj.isDebit ?? false)
+                                                      ? Colors.red
+                                                      : Colors.green,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const Divider(color: hintcol),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+
+                final showAddPaymentPane =
+                    _showAddPaymentPane && _isLandscapeTablet(context);
+                if (!showAddPaymentPane) {
+                  return expensesList;
+                }
+
+                final paneWidth = (constraints.maxWidth * 0.5).clamp(
+                  360.0,
+                  480.0,
+                );
+
+                return Row(
+                  children: [
+                    Expanded(child: expensesList),
+                    const VerticalDivider(
+                      width: 1,
+                      thickness: 1,
+                      color: Colors.white12,
+                    ),
+                    SizedBox(
+                      width: paneWidth,
+                      child: AddPaymentPage(
+                        embedded: true,
+                        onClose: _closeAddPaymentPane,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
           // ListView.builder(
@@ -851,44 +918,22 @@ class _HomePageState extends State<HomePage> {
           //     itemBuilder: (context, ind) {
           //       return
           //     }),
-          floatingActionButton: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height * 0.07,
-              right: 10,
-            ),
-            child: FloatingActionButton(
-              backgroundColor: floatingButtonColor,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder:
-                        (context, animation, secondaryAnimation) =>
-                            const AddPaymentPage(),
-                    transitionsBuilder: (
-                      context,
-                      animation,
-                      secondaryAnimation,
-                      child,
-                    ) {
-                      const begin = Offset(0.8, 0.8);
-                      const end = Offset.zero;
-                      const curve = Curves.fastEaseInToSlowEaseOut;
-                      var tween = Tween(
-                        begin: begin,
-                        end: end,
-                      ).chain(CurveTween(curve: curve));
-                      return SlideTransition(
-                        position: animation.drive(tween),
-                        child: child,
-                      );
-                    },
+          floatingActionButton:
+              _showAddPaymentPane && _isLandscapeTablet(context)
+                  ? null
+                  : Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).size.height * 0.07,
+                      right: 10,
+                    ),
+                    child: FloatingActionButton(
+                      backgroundColor: floatingButtonColor,
+                      onPressed: () {
+                        _openAddPayment(inPane: _isLandscapeTablet(context));
+                      },
+                      child: const Icon(Icons.add, color: buttonTextColor),
+                    ),
                   ),
-                );
-              },
-              child: const Icon(Icons.add, color: buttonTextColor),
-            ),
-          ),
         );
       },
     );
@@ -903,6 +948,23 @@ class _HomePageState extends State<HomePage> {
     } else {
       return true;
     }
+  }
+
+  Route _createAddPaymentRoute() {
+    return PageRouteBuilder(
+      pageBuilder:
+          (context, animation, secondaryAnimation) => const AddPaymentPage(),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.8, 0.8);
+        const end = Offset.zero;
+        const curve = Curves.fastEaseInToSlowEaseOut;
+        var tween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: curve));
+        return SlideTransition(position: animation.drive(tween), child: child);
+      },
+    );
   }
 
   Route _createEditRoute(Expense expense) {

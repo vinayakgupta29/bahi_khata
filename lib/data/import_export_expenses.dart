@@ -61,7 +61,8 @@ class ImportExportExpenses {
   ) {
     final normalized = Map<String, dynamic>.from(item);
 
-    if (normalized["id"] != null && normalized["id"].toString().trim().isNotEmpty) {
+    if (normalized["id"] != null &&
+        normalized["id"].toString().trim().isNotEmpty) {
       normalized["id"] = normalized["id"].toString();
     } else {
       normalized.remove("id");
@@ -71,14 +72,18 @@ class ImportExportExpenses {
     }
 
     if (normalized["label"] is String) {
-      normalized["label"] = normalizeTags((normalized["label"] as String).split("|"));
+      normalized["label"] = normalizeTags(
+        (normalized["label"] as String).split("|"),
+      );
     }
 
     if (normalized["label"] == null) {
       normalized["label"] = <String>[];
     }
 
-    normalized["label"] = normalizeTags(normalized["label"] as Iterable<dynamic>?);
+    normalized["label"] = normalizeTags(
+      normalized["label"] as Iterable<dynamic>?,
+    );
 
     if (!normalized.containsKey("isSMS")) {
       normalized["isSMS"] = false;
@@ -258,7 +263,8 @@ class ImportExportExpenses {
           }
           final expenseDate = DateTime.parse(expense.date!);
           final matchesMonth =
-              expenseDate.year == month.year && expenseDate.month == month.month;
+              expenseDate.year == month.year &&
+              expenseDate.month == month.month;
           if (!matchesMonth) {
             return false;
           }
@@ -313,7 +319,8 @@ class ImportExportExpenses {
     await DataBase.persistCurrentExpenses();
 
     final tempDir = await _getExportDirectory();
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final timestamp =
+        _getTimeStampForFileName(); //DateTime.now().toLocal().toString();
     final exportFile = File('${tempDir.path}/expenses_$timestamp.$format');
 
     if (format == "pbke") {
@@ -360,11 +367,26 @@ class ImportExportExpenses {
       importedExpenses: importedExpenses,
       onDuplicate: onDuplicate,
     );
-    _log("importExpensesFromFile mergedExpenses=${mergeResult.expenses.length}");
+    _log(
+      "importExpensesFromFile mergedExpenses=${mergeResult.expenses.length}",
+    );
     DataBase.expenses = mergeResult.expenses;
     _normalizeExpenseLabelsInPlace(DataBase.expenses);
     await DataBase.persistCurrentExpenses();
     _log("importExpensesFromFile persist complete");
     return DataBase.expenses;
+  }
+
+  static String _getTimeStampForFileName() {
+    final now = DateTime.now();
+
+    return '${now.year.toString().padLeft(4, '0')}_'
+        '${now.month.toString().padLeft(2, '0')}_'
+        '${now.day.toString().padLeft(2, '0')}_'
+        '${now.hour.toString().padLeft(2, '0')}_'
+        '${now.minute.toString().padLeft(2, '0')}_'
+        '${now.second.toString().padLeft(2, '0')}';
+
+    // Example: 2026_07_15_09_42_18
   }
 }

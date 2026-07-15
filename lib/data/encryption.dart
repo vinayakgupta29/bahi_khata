@@ -1,7 +1,4 @@
-import 'dart:typed_data';
-
-import 'package:encrypt/encrypt.dart' as enc;
-import 'package:pointycastle/export.dart';
+import 'package:cryptography/cryptography.dart';
 
 /// Shared AES helpers used by the PBKE codec.
 ///
@@ -10,36 +7,60 @@ import 'package:pointycastle/export.dart';
 ///
 /// In that flow:
 /// - `pbke_file.dart` owns the binary file layout
-/// - this file owns key derivation and AES-GCM decryption helpers
+/// - this file owns AES-GCM encryption and decryption helpers
 ///
-/// The current `encryptAESGCM()` helper is intentionally left unchanged because
-/// the caller may manage file footer fields itself. For PBKE reads, the
-/// important mapping is:
-///
-/// `ciphertext + footer(key, iv) -> AES-GCM decrypt -> compressed bytes`
+/// The encrypted PBKE payload is `ciphertext + 16-byte GCM tag`; the IV and key
+/// are stored separately in the file footer.
 class EncryptionAES {
-  static const String KEY = "viksviksviksvikspbkepbkepbkepbke";
-  static const int KEY_LENGTH = EncryptionAES.KEY.length;
-  static const int IV_LENGTH = 16;
-  static const int SALT_LENGTH = 16;
-  static const int TAG_LENGTH = 16;
-  static const int KEY_ITERATIONS_COUNT = 10000;
+  static const int keyLength = 32;
+  static const int tagLength = 16;
 
-  static Uint8List deriveKey(String key) {
-    final saltBytes = enc.IV.fromSecureRandom(SALT_LENGTH).bytes;
-    final pbkdf = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64));
-    pbkdf.init(Pbkdf2Parameters(saltBytes, KEY_ITERATIONS_COUNT, KEY_LENGTH));
-    return pbkdf.process(Uint8List.fromList(key.codeUnits));
+  static AesGcm _aesGcmForNonceLength(int nonceLength) {
+    return AesGcm.with256bits(nonceLength: nonceLength);
   }
 
-  static Future<List<int>> encryptAESGCM(List<int> plaintext) async {
-    final key = enc.Key(deriveKey(KEY));
-    final iv = enc.IV.fromSecureRandom(IV_LENGTH);
+  static void _validateInputs(
+    List<int> payloadBytes,
+    List<int> keyBytes,
+    List<int> ivBytes, {
+    required bool payloadIncludesTag,
+  }) {
+    if (keyBytes.length != keyLength) {
+      throw Exception(
+        "Decryption failed: invalid key length ${keyBytes.length}",
+      );
+    }
+    if (ivBytes.isEmpty) {
+      throw Exception("Decryption failed: invalid iv length ${ivBytes.length}");
+    }
+    if (payloadIncludesTag && payloadBytes.length <= tagLength) {
+      throw Exception("Data to decrypt is too small");
+    }
+    if (!payloadIncludesTag && payloadBytes.isEmpty) {
+      throw Exception("Data to encrypt is too small");
+    }
+  }
+
+  static Future<List<int>> encryptAESGCM(
+    List<int> plaintextBytes, {
+    required List<int> keyBytes,
+    required List<int> ivBytes,
+  }) async {
+    _validateInputs(
+      plaintextBytes,
+      keyBytes,
+      ivBytes,
+      payloadIncludesTag: false,
+    );
 
     try {
-      final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
-      final encrypted = encrypter.encryptBytes(plaintext, iv: iv);
-      return encrypted.bytes;
+      final algorithm = _aesGcmForNonceLength(ivBytes.length);
+      final secretBox = await algorithm.encrypt(
+        plaintextBytes,
+        secretKey: SecretKey(keyBytes),
+        nonce: ivBytes,
+      );
+      return secretBox.concatenation(nonce: false);
     } catch (e) {
       throw Exception("Encryption failed: $e");
     }
@@ -50,27 +71,22 @@ class EncryptionAES {
     List<int> keyBytes,
     List<int> ivBytes,
   ) async {
-    if (keyBytes.length != KEY_LENGTH) {
-      throw Exception(
-        "Decryption failed: invalid key length ${keyBytes.length}",
-      );
-    }
-    if (ivBytes.isEmpty) {
-      throw Exception("Decryption failed: invalid iv length ${ivBytes.length}");
-    }
-    if (ciphertextBytes.isEmpty) {
-      throw Exception("Data to decrypt is too small");
-    }
-
-    final key = enc.Key(Uint8List.fromList(keyBytes));
-    final nonce = enc.IV(Uint8List.fromList(ivBytes));
+    _validateInputs(
+      ciphertextBytes,
+      keyBytes,
+      ivBytes,
+      payloadIncludesTag: true,
+    );
 
     try {
-      final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
-      return encrypter.decryptBytes(
-        enc.Encrypted(Uint8List.fromList(ciphertextBytes)),
-        iv: nonce,
+      final algorithm = _aesGcmForNonceLength(ivBytes.length);
+      final tagStart = ciphertextBytes.length - tagLength;
+      final secretBox = SecretBox(
+        ciphertextBytes.sublist(0, tagStart),
+        nonce: ivBytes,
+        mac: Mac(ciphertextBytes.sublist(tagStart)),
       );
+      return algorithm.decrypt(secretBox, secretKey: SecretKey(keyBytes));
     } catch (e) {
       throw Exception("Decryption failed: $e");
     }

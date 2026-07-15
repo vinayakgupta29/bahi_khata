@@ -607,7 +607,7 @@ class _EditPageState extends State<EditPage> with TickerProviderStateMixin {
                             debugPrint("$_foundExpense");
                           },
                           child: const Text(
-                            "Add",
+                            "Save",
                             style: TextStyle(color: buttonTextColor),
                           ),
                         ),
