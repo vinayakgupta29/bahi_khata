@@ -28,110 +28,110 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  var tags = ["Food", "TRANSPORT", "Fast Food", "Donation", "Travel", "Other"];
+  //var tags = ["Food", "TRANSPORT", "Fast Food", "Donation", "Travel", "Other"];
   List<Expense> _foundExpense = [];
   List<Widget> widgets = [];
   File? file;
   bool _showAddPaymentPane = false;
   // text controller
-  String json = """[
-    
-  {
-    "name": "Expense1",
-    "label": null,
-    "id": "1641345460000",
-    "date": "2023-01-01T00:00:00.000Z",
-    "amount": "100",
-    "isDebit": true
-  },
-  {
-    "name": "Expense2",
-    "label": null,
-    "id": "1642246460000",
-    "date": "2023-01-15T00:00:00.000Z",
-    "amount": "150",
-    "isDebit": false
-  },
-  {
-    "name": "Expense3",
-    "label": null,
-    "id": "1643751060000",
-    "date": "2023-02-02T00:00:00.000Z",
-    "amount": "80",
-    "isDebit": true
-  },
-  {
-    "name": "Expense4",
-    "label": null,
-    "id": "1645395260000",
-    "date": "2023-02-20T00:00:00.000Z",
-    "amount": "120",
-    "isDebit": false
-  },
-  {
-    "name": "Expense5",
-    "label": null,
-    "id": "1646549460000",
-    "date": "2023-03-05T00:00:00.000Z",
-    "amount": "200",
-    "isDebit": true
-  },
-  {
-    "name": "Expense6",
-    "label": null,
-    "id": "1647747060000",
-    "date": "2023-03-18T00:00:00.000Z",
-    "amount": "90",
-    "isDebit": false
-  },
-  {
-    "name": "Expense7",
-    "label": null,
-    "id": "1649107260000",
-    "date": "2023-04-10T00:00:00.000Z",
-    "amount": "180",
-    "isDebit": true
-  },
-  {
-    "name": "Expense8",
-    "label": null,
-    "id": "1650015060000",
-    "date": "2023-04-25T00:00:00.000Z",
-    "amount": "130",
-    "isDebit": false
-  },
-  {
-    "name": "Expense9",
-    "label": null,
-    "id": "1651403860000",
-    "date": "2023-05-08T00:00:00.000Z",
-    "amount": "160",
-    "isDebit": true
-  },
-  {
-    "name": "Expense10",
-    "label": null,
-    "id": "1652305460000",
-    "date": "2023-05-22T00:00:00.000Z",
-    "amount": "110",
-    "isDebit": false
-  },{
-    "name":"expense11",
-    "label":"",
-    "id":"001",
-    "date":"2024-01-07T00:00:00.000Z",
-    "amount":"15",
-    "isDebit":true
-  },{
-    "name":"expense12",
-    "label":"",
-    "id":"002",
-    "date":"2024-01-08T00:00:00.000Z",
-    "amount":"75",
-    "isDebit":true
-  }
-]
-""";
+  //   String json = """[
+
+  //   {
+  //     "name": "Expense1",
+  //     "label": null,
+  //     "id": "1641345460000",
+  //     "date": "2023-01-01T00:00:00.000Z",
+  //     "amount": "100",
+  //     "isDebit": true
+  //   },
+  //   {
+  //     "name": "Expense2",
+  //     "label": null,
+  //     "id": "1642246460000",
+  //     "date": "2023-01-15T00:00:00.000Z",
+  //     "amount": "150",
+  //     "isDebit": false
+  //   },
+  //   {
+  //     "name": "Expense3",
+  //     "label": null,
+  //     "id": "1643751060000",
+  //     "date": "2023-02-02T00:00:00.000Z",
+  //     "amount": "80",
+  //     "isDebit": true
+  //   },
+  //   {
+  //     "name": "Expense4",
+  //     "label": null,
+  //     "id": "1645395260000",
+  //     "date": "2023-02-20T00:00:00.000Z",
+  //     "amount": "120",
+  //     "isDebit": false
+  //   },
+  //   {
+  //     "name": "Expense5",
+  //     "label": null,
+  //     "id": "1646549460000",
+  //     "date": "2023-03-05T00:00:00.000Z",
+  //     "amount": "200",
+  //     "isDebit": true
+  //   },
+  //   {
+  //     "name": "Expense6",
+  //     "label": null,
+  //     "id": "1647747060000",
+  //     "date": "2023-03-18T00:00:00.000Z",
+  //     "amount": "90",
+  //     "isDebit": false
+  //   },
+  //   {
+  //     "name": "Expense7",
+  //     "label": null,
+  //     "id": "1649107260000",
+  //     "date": "2023-04-10T00:00:00.000Z",
+  //     "amount": "180",
+  //     "isDebit": true
+  //   },
+  //   {
+  //     "name": "Expense8",
+  //     "label": null,
+  //     "id": "1650015060000",
+  //     "date": "2023-04-25T00:00:00.000Z",
+  //     "amount": "130",
+  //     "isDebit": false
+  //   },
+  //   {
+  //     "name": "Expense9",
+  //     "label": null,
+  //     "id": "1651403860000",
+  //     "date": "2023-05-08T00:00:00.000Z",
+  //     "amount": "160",
+  //     "isDebit": true
+  //   },
+  //   {
+  //     "name": "Expense10",
+  //     "label": null,
+  //     "id": "1652305460000",
+  //     "date": "2023-05-22T00:00:00.000Z",
+  //     "amount": "110",
+  //     "isDebit": false
+  //   },{
+  //     "name":"expense11",
+  //     "label":"",
+  //     "id":"001",
+  //     "date":"2024-01-07T00:00:00.000Z",
+  //     "amount":"15",
+  //     "isDebit":true
+  //   },{
+  //     "name":"expense12",
+  //     "label":"",
+  //     "id":"002",
+  //     "date":"2024-01-08T00:00:00.000Z",
+  //     "amount":"75",
+  //     "isDebit":true
+  //   }
+  // ]
+  // """;
 
   // delete task
   void deleteExpense(String id) {
@@ -139,7 +139,7 @@ class _HomePageState extends State<HomePage> {
       DataBase.expenses.removeWhere((item) => item.id == id);
     });
     DataBase.persistCurrentExpenses();
-    debugPrint(DataBase.expenses.toString());
+    debugPrint("[HomePage] ${DataBase.expenses.toString()}");
     setState(() {
       expenseNotifier.update(DataBase.expenses);
     });
@@ -295,7 +295,7 @@ class _HomePageState extends State<HomePage> {
 
   bool _isLandscapeTablet(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
-    debugPrint("${mediaQuery.size.height}, ${mediaQuery.size.width}");
+    debugPrint(" [HomePage] ${mediaQuery.size.height}, ${mediaQuery.size.width}");
     return mediaQuery.orientation == Orientation.landscape &&
         mediaQuery.size.width >= 840;
   }
@@ -426,9 +426,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     DataBase.loadExpenses().then((value) {
       setState(() {
-        json = value;
-        debugPrint(json);
-        DataBase.expenses = Expense.listFromRawJson(json);
+        debugPrint("[HomePage] json");
+        DataBase.expenses = Expense.listFromRawJson(value);
         _syncLocalExpenseState();
       });
       if (Platform.isAndroid && DataBase.smsExpensesEnabled) {
@@ -450,7 +449,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(" is lanscape ${_isLandscapeTablet(context)}");
+    debugPrint("[HomePage] is lanscape ${_isLandscapeTablet(context)}");
     return StreamBuilder<List<Expense>>(
       stream: expenseNotifier.stream,
       builder: (context, snapshot) {
@@ -458,7 +457,7 @@ class _HomePageState extends State<HomePage> {
           return const SplashScreen();
         }
         _foundExpense = snapshot.data ?? [];
-        debugPrint("found length ${DataBase.expenses.length}");
+        debugPrint("[HomePage] found length ${DataBase.expenses.length}");
         _foundExpense.sort((a, b) {
           DateTime dateA = DateTime.parse(a.date!);
           DateTime dateB = DateTime.parse(b.date!);
@@ -475,7 +474,7 @@ class _HomePageState extends State<HomePage> {
                       : true) &&
                   (dateFilter(obj)));
             }).toList();
-        debugPrint("selected ${DataBase.selectedTags} filter $filterObjects");
+        debugPrint("[HomePage] selected ${DataBase.selectedTags} filter $filterObjects");
         // // Group objects by month and year
         Map<String, List<Expense>> groupedObjects = {};
         for (Expense obj in filterObjects) {

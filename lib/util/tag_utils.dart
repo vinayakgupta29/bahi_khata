@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 const List<String> defaultTags = [
   "FOOD",
   "FAST FOOD",
+  "TRANSPORT",
   "DONATION",
   "TRAVEL",
   "OTHER",
